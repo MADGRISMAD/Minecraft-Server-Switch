@@ -62,28 +62,35 @@ export default {
       }
     },
     async startServer() {
-      this.loading = true;
-      const ipAddress = await this.fetchIpAddress();
-      if (!ipAddress) {
-        this.loading = false;
-        return;
-      }
-      try {
-        const response = await axios.post(`https://ua6bjhkpj7.execute-api.us-west-1.amazonaws.com/StartServer`);
-        if (response.status === 200) {
-          console.log("Server started successfully");
-          this.serverStatus = 'running';
-          await this.fetchGif();
+  this.loading = true;
+  if (this.serverStatus === 'running') {
+    this.loading = false;
+    console.log("El servidor ya está encendido.");
+    return;
+  }
+  
+  try {
+    const response = await axios.post(`https://ua6bjhkpj7.execute-api.us-west-1.amazonaws.com/StartServer`);
+    if (response.status === 200) {
+      console.log("Server started successfully");
+      this.serverStatus = 'running';
+      setTimeout(async () => {
+        const ipAddress = await this.fetchIpAddress();
+        if (ipAddress) {
           this.ipAddress = ipAddress; // Asignar la dirección IP al componente
-        } else {
-          console.error("Server failed to start");
         }
-      } catch (error) {
-        console.error("Error starting server:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
+      }, 10000); // Esperar 10 segundos antes de obtener la IP
+      await this.fetchGif();
+    } else {
+      console.error("Server failed to start");
+    }
+  } catch (error) {
+    console.error("Error starting server:", error);
+  } finally {
+    this.loading = false;
+  }
+}
+,
     async stopServer() {
       this.loading = true;
       const ipAddress = await this.fetchIpAddress();
@@ -137,7 +144,26 @@ export default {
       setTimeout(() => {
         this.copied = false; // Reiniciar el estado de la variable 'copied' después de un tiempo
       }, 3000); // Reiniciar después de 3 segundos (ajustable)
+    },
+    async checkServerStatus() {
+      try {
+        const response = await axios.get("https://ua6bjhkpj7.execute-api.us-west-1.amazonaws.com/Check");
+        if (response.status === 200 && response.data.message) {
+          const ipAddress = response.data.message.split(": ")[1];
+          console.log("Current IP address:", ipAddress);
+          this.serverStatus = 'running';
+          this.ipAddress = ipAddress;
+        } else {
+          console.error("Server is stopped");
+          this.serverStatus = 'stopped';
+        }
+      } catch (error) {
+        console.error("Error checking server status:", error);
+      }
     }
+  },
+  mounted() {
+    this.checkServerStatus();
   }
 };
 </script>
