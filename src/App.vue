@@ -11,8 +11,8 @@
         </div>
       </div>
       <div class="flex justify-center">
-        <button @click="startServer" :disabled="serverStatus === 'running'" class="btn-start">
-          <img src="/src/assets/rocket.png" alt="Icono de iniciar servidor" class="w-8 h-8 mr-2">
+        <button @click="startServer" :disabled="serverStatus === 'running'" class="btn-start ">
+          <img src="/src/assets/rocket.png" alt="Icono de iniciar servidor" class="w-8 h-8 mr-2 ">
           Iniciar servidor
         </button>
         <button @click="stopServer" :disabled="serverStatus === 'stopped'" class="btn-stop ml-4">
